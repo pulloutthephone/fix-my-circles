@@ -23,7 +23,7 @@ frequency domains. By analyzing the amplitude of each present frequency, it
 reveals the signal's frequency spectrum. In mathematical terms, the transform
 is defined as:
 
-$$ F(\omega) = \int_{-\infin}^{\infin} f(t) e^{-i \omega t} dt$$
+$$ F(\omega) = \int_{-\infty}^{\infty} f(t) e^{-i \omega t} dt$$
 
 > **_NOTE:_** Using $i$ as the imaginary constant instead of $j$ irks me, but
 for mathematical purposes, I'll keep it as such. ;)
