@@ -1,0 +1,3 @@
+# Ignore test files
+src/circle.c
+src/circle
