@@ -1,20 +1,20 @@
 # Directories
-SRC_DIR 	:= ../src
-BIN_DIR 	:= ../bin
+SRC_DIR := ../src
+BIN_DIR := ../bin
 
 # Files
-TESTS 		:= $(SRC_DIR)/tests.c
-SOLVE 		:= $(SRC_DIR)/solve.c
-FAIL 		:= $(SRC_DIR)/fail.c
+TESTS := $(SRC_DIR)/tests.c
+SOLVE := $(SRC_DIR)/solve.c
+FAIL  := $(SRC_DIR)/fail.c
 
 # Executables
-SOLVE_EXE 	:= $(BIN_DIR)/solve
-FAIL_EXE	:= $(BIN_DIR)/fail
+SOLVE_EXE := $(BIN_DIR)/solve
+FAIL_EXE  := $(BIN_DIR)/fail
 
 # Compiler and flags
-CC 			:= gcc
-CFLAGS 		:= -Wall -Wextra -std=c11 -O2
-LDFLAGS 	:= -lcriterion
+CC      := gcc
+CFLAGS  := -Wall -Wextra -std=c11 -O2
+LDFLAGS := -lcriterion -lm
 
 # Rules
 .PHONY: all clean
