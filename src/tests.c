@@ -137,8 +137,8 @@ tester (display_t *display)
   clear_display (display);
 
   // Circle parameters.
-  size_t  cr  = (rand () % 5) + 4; // [4 - 8]
-  size_t  cxs = 2;
+  size_t  cr  = (rand () % 5) + 2; // [4 - 6]
+  size_t  cxs = 3;
   point_t cp  = { .x = (rand () % (display->cols - 2 * cr * cxs) + cr * cxs),
                   .y = (rand () % (display->rows - 2 * cr) + cr) };
   
@@ -161,7 +161,7 @@ tester (display_t *display)
   // Check if the pointer returned by the user is still pointing to the same
   // block of memory.
   cr_assert_eq (org_content_ptr, display->content,
-                "Pointer is not longer pointing to the same memory");
+                "Pointer is no longer pointing to the same memory");
   // Check if the returned content is correct.
   cr_assert_str_eq (display->content, expected,
                     "You haven't fixed my circle :(\nCan you try again?");
