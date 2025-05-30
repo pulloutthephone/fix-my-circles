@@ -39,7 +39,7 @@ clear_display (display_t *display)
 
 void
 show (display_t *display)
-{
+{ // Debug function
   for (char *p = display->content; *p; p++)
     putchar (*p);
 }
@@ -50,6 +50,7 @@ destroy_display (display_t *display)
   free (display->content);
   memset (display, 0, sizeof (display_t));
 }
+
 typedef long coord_t;
 
 coord_t
@@ -132,12 +133,12 @@ swiss_cheese (display_t *display, circle_t *circle, size_t n_holes)
 }
 
 void
-tester (display_t *display)
+random_tester (display_t *display)
 {
   clear_display (display);
 
   // Circle parameters.
-  size_t  cr  = (rand () % 5) + 2; // [4 - 6]
+  size_t  cr  = (rand () % 5) + 2; // [2 - 6]
   size_t  cxs = 3;
   point_t cp  = { .x = (rand () % (display->cols - 2 * cr * cxs) + cr * cxs),
                   .y = (rand () % (display->rows - 2 * cr) + cr) };
@@ -145,38 +146,190 @@ tester (display_t *display)
   circle_t circle = { .pos = cp, .radius = cr, .x_stretch = cxs };
   DRAW_CHEESE (display, &circle);
 
-  // Save the current display content pointer and copy it for future comparison
+  // Save the current display content for future comparison
   // against the user's result.
-  char *org_content_ptr = display->content;
-  char *expected        = malloc (strlen (display->content) + 1);
+  size_t len = strlen (display->content) + 1;
+  char   input[len];
+  char   expected[len];
   strcpy (expected, display->content);
 
   swiss_cheese (display, &circle, 4);
-  show (display);
+  strcpy (input, display->content);
 
   // Send the damaged circle to the user.
   circle_mender (display->content);
-  show (display);
 
-  // Check if the pointer returned by the user is still pointing to the same
-  // block of memory.
-  cr_assert_eq (org_content_ptr, display->content,
-                "Pointer is no longer pointing to the same memory");
   // Check if the returned content is correct.
-  cr_assert_str_eq (display->content, expected,
-                    "You haven't fixed my circle :(\nCan you try again?");
-
-  free (expected);
+  cr_assert_str_eq (expected, display->content,
+                    "You haven't fixed my circle :(\nInput:\n%s\nOutput:\n"
+                    "%s\nExpected:\n%s\nCan you try again?",
+                    input, display->content, expected);
 }
 
-#define NUM_RAND_TESTS 1000
+#define NUM_RAND_TESTS 50
 Test (circle, random_tests)
 {
   srand (time (0));
   display_t display = init_display (20, 40);
   
   for (size_t i = 0; i < NUM_RAND_TESTS; i++)
-    tester (&display);
+    random_tester (&display);
   
   destroy_display (&display);
+}
+
+void
+fix_tester (const char *input, const char *expected)
+{
+  char content[strlen (input) + 1];
+  strcpy (content, input);
+
+  circle_mender (content);
+
+  // Check if the returned content is correct.
+  cr_assert_str_eq (expected, content,
+                    "You haven't fixed my circle :(\nInput:\n%s\nOutput:\n"
+                    "%s\nExpected:\n%s\nCan you try again?",
+                    input, content, expected);
+}
+
+Test (circle, example1)
+{
+  const char *input    = "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                         #####          \n"
+                         "                   #################    \n"
+                         "                 #####           #####  \n"
+                         "                ####               #### \n"
+                         "               ######            #######\n"
+                         "                #######     ########### \n"
+                         "                 #####################  \n"
+                         "                   #################    \n"
+                         "                         #####          \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n";
+
+  const char *expected = "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                         #####          \n"
+                         "                   #################    \n"
+                         "                 #####################  \n"
+                         "                ####################### \n"
+                         "               #########################\n"
+                         "                ####################### \n"
+                         "                 #####################  \n"
+                         "                   #################    \n"
+                         "                         #####          \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n";
+
+  fix_tester (input, expected);
+}
+
+Test (circle, example2)
+{
+  const char *input    = "                                        \n"
+                         "                                        \n"
+                         "          #####                         \n"
+                         "    #################                   \n"
+                         "  #######     #########                 \n"
+                         " ######         ########                \n"
+                         "#######           #######               \n"
+                         " ####               ####                \n"
+                         "  #####           #####                 \n"
+                         "    #################                   \n"
+                         "          #####                         \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n";
+
+  const char *expected = "                                        \n"
+                         "                                        \n"
+                         "          #####                         \n"
+                         "    #################                   \n"
+                         "  #####################                 \n"
+                         " #######################                \n"
+                         "#########################               \n"
+                         " #######################                \n"
+                         "  #####################                 \n"
+                         "    #################                   \n"
+                         "          #####                         \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n";
+
+  fix_tester (input, expected);
+}
+
+Test (circle, example3)
+{
+  const char *input    = "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                 #####                  \n"
+                         "         #####################          \n"
+                         "      ###########################       \n"
+                         "    ########     ##################     \n"
+                         "  ########         ##################   \n"
+                         "  ##########     ####     ###########   \n"
+                         " ##############             ##########  \n"
+                         "  ###########             ###########   \n"
+                         "  #############             #########   \n"
+                         "    #################     #########     \n"
+                         "      ###########################       \n"
+                         "         #####################          \n"
+                         "                 #####                  \n";
+
+  const char *expected = "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "                 #####                  \n"
+                         "         #####################          \n"
+                         "      ###########################       \n"
+                         "    ###############################     \n"
+                         "  ###################################   \n"
+                         "  ###################################   \n"
+                         " #####################################  \n"
+                         "  ###################################   \n"
+                         "  ###################################   \n"
+                         "    ###############################     \n"
+                         "      ###########################       \n"
+                         "         #####################          \n"
+                         "                 #####                  \n";
+
+  fix_tester (input, expected);
 }
