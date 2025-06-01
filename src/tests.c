@@ -93,13 +93,15 @@ draw_circle (display_t *display, circle_t *circle, char c)
   coord_t ey = clamp_coord (y + r + 1, 0, display->rows);
 
   for (coord_t i = sy; i < ey; i++)
-    for (coord_t j = sx; j < ex; j++)
-      {
-        coord_t dx = x - j;
-        coord_t dy = y - i;
-        if ((dx * dx / (xs * xs) + dy * dy) <= r * r)
-          display->content[i * (display->cols + 1) + j] = c;
-      }
+    {
+      for (coord_t j = sx; j < ex; j++)
+        {
+          coord_t dx = x - j;
+          coord_t dy = y - i;
+          if ((dx * dx / (xs * xs) + dy * dy) <= r * r)
+            display->content[i * (display->cols + 1) + j] = c;
+        }
+    }
 }
 
 void
