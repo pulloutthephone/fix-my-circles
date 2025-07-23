@@ -39,7 +39,7 @@ clear_display (display_t *display)
 
 void
 show (display_t *display)
-{ // Debug function
+{ // Debug function.
   for (char *p = display->content; *p; p++)
     putchar (*p);
 }
