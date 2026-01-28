@@ -6,10 +6,10 @@ You must fix the corrupted circles as soon as possible - before the world turns 
 
 # Task
 Write a function `circle_mender` that takes as an input a string representing 
-a circle with some holes and returns the same string with the holes filled.
+a circle with some holes and returns a string with the holes filled.
 
 The input has the following characteristics:
-* It is a null-terminated string representing an ASCII-art circle;
+* It is a string representing an ASCII-art circle;
 * It consists of exactly 20 lines, each with 40 characters followed by a newline character;
 * The circle is drawn using the pound sign (`#`), and any holes within it are represented by spaces (` `);
 * The edges of the circle are never missing.
