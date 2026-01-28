@@ -82,6 +82,9 @@ draw_circle (display_t *display, circle_t *circle, char c)
   coord_t r  = circle->radius;
   coord_t xs = circle->x_stretch;
 
+  if (r <= 0)
+    return;
+
   // Calculating the bounding square that encapsulates the circle.  For this
   // test case, the clamping should not be needed since the circle is supposed
   // to be inside the display.  However, for my peace of mind, I'll keep this
@@ -98,7 +101,7 @@ draw_circle (display_t *display, circle_t *circle, char c)
         {
           coord_t dx = x - j;
           coord_t dy = y - i;
-          if ((dx * dx / (xs * xs) + dy * dy) <= r * r)
+          if (dx * dx + dy * dy * xs * xs <= r * r * xs * xs)
             display->content[i * (display->cols + 1) + j] = c;
         }
     }
@@ -111,23 +114,23 @@ swiss_cheese (display_t *display, circle_t *circle, size_t n_holes)
   coord_t y  = circle->pos.y;
   coord_t xs = circle->x_stretch;
 
-  // Compute parameters of square that fits inside the circle.
-  double r    = circle->radius;
-  double s    = r / sqrt (2) - 1;
-  double hr   = r / 4;
-  double xoff = hr * xs;
-  double yoff = hr;
+  double r  = circle->radius;
+  double hr = r / 3;
+  double s  = r / sqrt (2) - hr - 0.5;
+
+  if (s <= 0)
+    return;
   
   // Adjust the square boundaries so the holes don't leak outside the circle.
-  coord_t sx = floor (x - s * xs + xoff);
-  coord_t ex = ceil (x + s * xs - xoff);
-  coord_t sy = floor (y - s + yoff);
-  coord_t ey = ceil (y + s - yoff);
+  coord_t sx = ceil (x - s * xs);
+  coord_t ex = floor (x + s * xs) + 1;
+  coord_t sy = ceil (y - s);
+  coord_t ey = floor (y + s) + 1;
 
   for (size_t i = 0; i < n_holes; i++)
     {
-      circle_t hole = { .pos.x     = (rand () % (ex - sx + 1)) + sx,
-                        .pos.y     = (rand () % (ey - sy + 1)) + sy,
+      circle_t hole = { .pos.x     = (rand () % (ex - sx)) + sx,
+                        .pos.y     = (rand () % (ey - sy)) + sy,
                         .radius    = hr,
                         .x_stretch = xs };
       DRAW_HOLE (display, &hole);
@@ -140,8 +143,8 @@ random_tester (display_t *display)
   clear_display (display);
 
   // Circle parameters.
-  size_t  cr  = (rand () % 5) + 2; // [2 - 6]
-  size_t  cxs = 3;
+  size_t  cr  = (rand () % 5) + 3; // [3 - 7]
+  size_t  cxs = 2;
   point_t cp  = { .x = (rand () % (display->cols - 2 * cr * cxs) + cr * cxs),
                   .y = (rand () % (display->rows - 2 * cr) + cr) };
   
@@ -200,16 +203,16 @@ Test (circle, example1)
   const char *input    = "                                        \n"
                          "                                        \n"
                          "                                        \n"
-                         "                         #####          \n"
-                         "                   #################    \n"
-                         "                 #####           #####  \n"
-                         "                ####               #### \n"
-                         "               ######            #######\n"
-                         "                #######     ########### \n"
-                         "                 #####################  \n"
-                         "                   #################    \n"
-                         "                         #####          \n"
                          "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "             #                          \n"
+                         "         #########                      \n"
+                         "        #### # ####                     \n"
+                         "       ###       ###                    \n"
+                         "        #### # ####                     \n"
+                         "         #########                      \n"
+                         "             #                          \n"
                          "                                        \n"
                          "                                        \n"
                          "                                        \n"
@@ -221,16 +224,16 @@ Test (circle, example1)
   const char *expected = "                                        \n"
                          "                                        \n"
                          "                                        \n"
-                         "                         #####          \n"
-                         "                   #################    \n"
-                         "                 #####################  \n"
-                         "                ####################### \n"
-                         "               #########################\n"
-                         "                ####################### \n"
-                         "                 #####################  \n"
-                         "                   #################    \n"
-                         "                         #####          \n"
                          "                                        \n"
+                         "                                        \n"
+                         "                                        \n"
+                         "             #                          \n"
+                         "         #########                      \n"
+                         "        ###########                     \n"
+                         "       #############                    \n"
+                         "        ###########                     \n"
+                         "         #########                      \n"
+                         "             #                          \n"
                          "                                        \n"
                          "                                        \n"
                          "                                        \n"
@@ -244,42 +247,42 @@ Test (circle, example1)
 
 Test (circle, example2)
 {
-  const char *input    = "                                        \n"
-                         "                                        \n"
-                         "          #####                         \n"
-                         "    #################                   \n"
-                         "  #######     #########                 \n"
-                         " ######         ########                \n"
-                         "#######           #######               \n"
-                         " ####               ####                \n"
-                         "  #####           #####                 \n"
-                         "    #################                   \n"
-                         "          #####                         \n"
-                         "                                        \n"
-                         "                                        \n"
-                         "                                        \n"
-                         "                                        \n"
+  const char *input    = "                       #                \n"
+                         "                ###############         \n"
+                         "              ###################       \n"
+                         "            #######################     \n"
+                         "           ############ ### ########    \n"
+                         "          ##########           ######   \n"
+                         "          #########             #####   \n"
+                         "         #######               #######  \n"
+                         "          #####             #########   \n"
+                         "          ######          ###########   \n"
+                         "           ######## ## #############    \n"
+                         "            #######################     \n"
+                         "              ###################       \n"
+                         "                ###############         \n"
+                         "                       #                \n"
                          "                                        \n"
                          "                                        \n"
                          "                                        \n"
                          "                                        \n"
                          "                                        \n";
 
-  const char *expected = "                                        \n"
-                         "                                        \n"
-                         "          #####                         \n"
-                         "    #################                   \n"
-                         "  #####################                 \n"
-                         " #######################                \n"
-                         "#########################               \n"
-                         " #######################                \n"
-                         "  #####################                 \n"
-                         "    #################                   \n"
-                         "          #####                         \n"
-                         "                                        \n"
-                         "                                        \n"
-                         "                                        \n"
-                         "                                        \n"
+  const char *expected = "                       #                \n"
+                         "                ###############         \n"
+                         "              ###################       \n"
+                         "            #######################     \n"
+                         "           #########################    \n"
+                         "          ###########################   \n"
+                         "          ###########################   \n"
+                         "         #############################  \n"
+                         "          ###########################   \n"
+                         "          ###########################   \n"
+                         "           #########################    \n"
+                         "            #######################     \n"
+                         "              ###################       \n"
+                         "                ###############         \n"
+                         "                       #                \n"
                          "                                        \n"
                          "                                        \n"
                          "                                        \n"
@@ -298,19 +301,19 @@ Test (circle, example3)
                          "                                        \n"
                          "                                        \n"
                          "                                        \n"
-                         "                 #####                  \n"
-                         "         #####################          \n"
-                         "      ###########################       \n"
-                         "    ########     ##################     \n"
-                         "  ########         ##################   \n"
-                         "  ##########     ####     ###########   \n"
-                         " ##############             ##########  \n"
-                         "  ###########             ###########   \n"
-                         "  #############             #########   \n"
-                         "    #################     #########     \n"
-                         "      ###########################       \n"
-                         "         #####################          \n"
-                         "                 #####                  \n";
+                         "              #                         \n"
+                         "        #############                   \n"
+                         "      #################                 \n"
+                         "    ########### # #######               \n"
+                         "   #########         #####              \n"
+                         "   #######            ####              \n"
+                         "  #######            ######             \n"
+                         "   #####          ########              \n"
+                         "   ######       ##########              \n"
+                         "    ######## ############               \n"
+                         "      #################                 \n"
+                         "        #############                   \n"
+                         "              #                         \n";
 
   const char *expected = "                                        \n"
                          "                                        \n"
@@ -319,19 +322,19 @@ Test (circle, example3)
                          "                                        \n"
                          "                                        \n"
                          "                                        \n"
-                         "                 #####                  \n"
-                         "         #####################          \n"
-                         "      ###########################       \n"
-                         "    ###############################     \n"
-                         "  ###################################   \n"
-                         "  ###################################   \n"
-                         " #####################################  \n"
-                         "  ###################################   \n"
-                         "  ###################################   \n"
-                         "    ###############################     \n"
-                         "      ###########################       \n"
-                         "         #####################          \n"
-                         "                 #####                  \n";
+                         "              #                         \n"
+                         "        #############                   \n"
+                         "      #################                 \n"
+                         "    #####################               \n"
+                         "   #######################              \n"
+                         "   #######################              \n"
+                         "  #########################             \n"
+                         "   #######################              \n"
+                         "   #######################              \n"
+                         "    #####################               \n"
+                         "      #################                 \n"
+                         "        #############                   \n"
+                         "              #                         \n";
 
   fix_tester (input, expected);
 }
