@@ -13,24 +13,24 @@ typedef struct
   size_t rows;
   size_t cols;
   char *content;
-} display_t;
+} display;
 
-display_t
+display
 init_display (size_t rows, size_t cols)
 {
-  display_t display = { .rows    = rows,
-                        .cols    = cols,
-                        .content = malloc (rows * (cols + 1) + 1) };
-  return display;
+  display disp = { .rows    = rows,
+                   .cols    = cols,
+                   .content = malloc (rows * (cols + 1) + 1) };
+  return disp;
 }
 
 void
-clear_display (display_t *display)
+clear_display (display *disp)
 {
-  char *p = display->content;
-  for (size_t i = 0; i < display->rows; i++)
+  char *p = disp->content;
+  for (size_t i = 0; i < disp->rows; i++)
     {
-      for (size_t j = 0; j < display->cols; j++)
+      for (size_t j = 0; j < disp->cols; j++)
         *p++ = ' ';
       *p++ = '\n';
     }
@@ -38,49 +38,49 @@ clear_display (display_t *display)
 }
 
 void
-show (display_t *display)
+show (display *disp)
 { // Debug function.
-  for (char *p = display->content; *p; p++)
+  for (char *p = disp->content; *p; p++)
     putchar (*p);
 }
 
 void
-destroy_display (display_t *display)
+destroy_display (display *disp)
 {
-  free (display->content);
-  memset (display, 0, sizeof (display_t));
+  free (disp->content);
+  memset (disp, 0, sizeof (display));
 }
 
-typedef long coord_t;
+typedef long coord;
 
-coord_t
-clamp_coord (coord_t v, coord_t lo, coord_t hi)
+coord
+clamp_coord (coord v, coord lo, coord hi)
 {
   return (v < lo ? lo : (v > hi ? hi : v));
 }
 
 typedef struct
 {
-  coord_t x;
-  coord_t y;
-} point_t;
+  coord x;
+  coord y;
+} point;
 
 typedef struct
 {
-  point_t pos;
-  coord_t radius;
-  coord_t x_stretch;
-} circle_t;
+  point pos;
+  coord radius;
+  coord x_stretch;
+} circle;
 
-#define DRAW_CHEESE(display, circle) draw_circle ((display), (circle), '#')
-#define DRAW_HOLE(display, circle)   draw_circle ((display), (circle), ' ')
+#define DRAW_CHEESE(disp, circ) draw_circle ((disp), (circ), '#')
+#define DRAW_HOLE(disp, circ)   draw_circle ((disp), (circ), ' ')
 void
-draw_circle (display_t *display, circle_t *circle, char c)
+draw_circle (display *disp, circle *circ, char c)
 {
-  coord_t x  = circle->pos.x;
-  coord_t y  = circle->pos.y;
-  coord_t r  = circle->radius;
-  coord_t xs = circle->x_stretch;
+  coord x  = circ->pos.x;
+  coord y  = circ->pos.y;
+  coord r  = circ->radius;
+  coord xs = circ->x_stretch;
 
   if (r <= 0)
     return;
@@ -89,32 +89,34 @@ draw_circle (display_t *display, circle_t *circle, char c)
   // test case, the clamping should not be needed since the circle is supposed
   // to be inside the display.  However, for my peace of mind, I'll keep this
   // to ensure that nothing bad happens.
-  coord_t rx = r * xs + 1;
-  coord_t sx = clamp_coord (x - rx, 0, display->cols);
-  coord_t ex = clamp_coord (x + rx + 1, 0, display->cols);
-  coord_t sy = clamp_coord (y - r, 0, display->rows);
-  coord_t ey = clamp_coord (y + r + 1, 0, display->rows);
+  size_t rows = disp->rows;
+  size_t cols = disp->cols;
+  coord  rx   = r * xs + 1;
+  coord  sx   = clamp_coord (x - rx, 0, cols);
+  coord  ex   = clamp_coord (x + rx + 1, 0, cols);
+  coord  sy   = clamp_coord (y - r, 0, rows);
+  coord  ey   = clamp_coord (y + r + 1, 0, rows);
 
-  for (coord_t i = sy; i < ey; i++)
+  for (coord i = sy; i < ey; i++)
     {
-      for (coord_t j = sx; j < ex; j++)
+      for (coord j = sx; j < ex; j++)
         {
-          coord_t dx = x - j;
-          coord_t dy = y - i;
+          coord dx = x - j;
+          coord dy = y - i;
           if (dx * dx + dy * dy * xs * xs <= r * r * xs * xs)
-            display->content[i * (display->cols + 1) + j] = c;
+            disp->content[i * (disp->cols + 1) + j] = c;
         }
     }
 }
 
 void
-swiss_cheese (display_t *display, circle_t *circle, size_t n_holes)
+swiss_cheese (display *disp, circle *circ, size_t n_holes)
 {
-  coord_t x  = circle->pos.x;
-  coord_t y  = circle->pos.y;
-  coord_t xs = circle->x_stretch;
+  coord x  = circ->pos.x;
+  coord y  = circ->pos.y;
+  coord xs = circ->x_stretch;
 
-  double r  = circle->radius;
+  double r  = circ->radius;
   double hr = r / 3;
   double s  = r / sqrt (2) - hr - 0.5;
 
@@ -122,65 +124,65 @@ swiss_cheese (display_t *display, circle_t *circle, size_t n_holes)
     return;
   
   // Adjust the square boundaries so the holes don't leak outside the circle.
-  coord_t sx = ceil (x - s * xs);
-  coord_t ex = floor (x + s * xs) + 1;
-  coord_t sy = ceil (y - s);
-  coord_t ey = floor (y + s) + 1;
+  coord sx = ceil (x - s * xs);
+  coord ex = floor (x + s * xs) + 1;
+  coord sy = ceil (y - s);
+  coord ey = floor (y + s) + 1;
 
   for (size_t i = 0; i < n_holes; i++)
     {
-      circle_t hole = { .pos.x     = (rand () % (ex - sx)) + sx,
-                        .pos.y     = (rand () % (ey - sy)) + sy,
-                        .radius    = hr,
-                        .x_stretch = xs };
-      DRAW_HOLE (display, &hole);
+      circle hole = { .pos.x     = (rand () % (ex - sx)) + sx,
+                      .pos.y     = (rand () % (ey - sy)) + sy,
+                      .radius    = hr,
+                      .x_stretch = xs };
+      DRAW_HOLE (disp, &hole);
     }
 }
 
 void
-random_tester (display_t *display)
+random_tester (display *disp)
 {
-  clear_display (display);
+  clear_display (disp);
 
   // Circle parameters.
-  size_t  cr  = (rand () % 5) + 3; // [3 - 7]
-  size_t  cxs = 2;
-  point_t cp  = { .x = (rand () % (display->cols - 2 * cr * cxs) + cr * cxs),
-                  .y = (rand () % (display->rows - 2 * cr) + cr) };
+  size_t cr  = (rand () % 5) + 3; // [3 - 7]
+  size_t cxs = 2;
+  point  cp  = { .x = (rand () % (disp->cols - 2 * cr * cxs) + cr * cxs),
+                 .y = (rand () % (disp->rows - 2 * cr) + cr) };
   
-  circle_t circle = { .pos = cp, .radius = cr, .x_stretch = cxs };
-  DRAW_CHEESE (display, &circle);
+  circle circ = { .pos = cp, .radius = cr, .x_stretch = cxs };
+  DRAW_CHEESE (disp, &circ);
 
   // Save the current display content for future comparison
   // against the user's result.
-  size_t len = strlen (display->content) + 1;
+  size_t len = strlen (disp->content) + 1;
   char   input[len];
   char   expected[len];
-  strcpy (expected, display->content);
+  strcpy (expected, disp->content);
 
-  swiss_cheese (display, &circle, 4);
-  strcpy (input, display->content);
+  swiss_cheese (disp, &circ, 4);
+  strcpy (input, disp->content);
 
   // Send the damaged circle to the user.
-  circle_mender (display->content);
+  circle_mender (disp->content);
 
   // Check if the returned content is correct.
-  cr_assert_str_eq (expected, display->content,
+  cr_assert_str_eq (expected, disp->content,
                     "You haven't fixed my circle :(\nInput:\n%s\nOutput:\n"
                     "%s\nExpected:\n%s\nCan you try again?",
-                    input, display->content, expected);
+                    input, disp->content, expected);
 }
 
 #define NUM_RAND_TESTS 50
 Test (circle, random_tests)
 {
   srand (time (0));
-  display_t display = init_display (20, 40);
+  display disp = init_display (20, 40);
   
   for (size_t i = 0; i < NUM_RAND_TESTS; i++)
-    random_tester (&display);
+    random_tester (&disp);
   
-  destroy_display (&display);
+  destroy_display (&disp);
 }
 
 void
