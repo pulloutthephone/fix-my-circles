@@ -125,14 +125,14 @@ swiss_cheese (display *disp, circle *circ, size_t n_holes)
   
   // Adjust the square boundaries so the holes don't leak outside the circle.
   coord sx = ceil (x - s * xs);
-  coord ex = floor (x + s * xs) + 1;
+  coord ex = floor (x + s * xs);
   coord sy = ceil (y - s);
-  coord ey = floor (y + s) + 1;
+  coord ey = floor (y + s);
 
   for (size_t i = 0; i < n_holes; i++)
     {
-      circle hole = { .pos.x     = (rand () % (ex - sx)) + sx,
-                      .pos.y     = (rand () % (ey - sy)) + sy,
+      circle hole = { .pos.x     = (rand () % (ex - sx + 1)) + sx,
+                      .pos.y     = (rand () % (ey - sy + 1)) + sy,
                       .radius    = hr,
                       .x_stretch = xs };
       DRAW_HOLE (disp, &hole);
