@@ -104,7 +104,7 @@ draw_circle (display *disp, circle *circ, char c)
           coord dx = x - j;
           coord dy = y - i;
           if (dx * dx + dy * dy * xs * xs <= r * r * xs * xs)
-            disp->content[i * (disp->cols + 1) + j] = c;
+            disp->content[i * (cols + 1) + j] = c;
         }
     }
 }
