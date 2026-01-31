@@ -168,8 +168,11 @@ random_tester (display *disp)
 
   // Check if the returned content is correct.
   cr_assert_str_eq (expected, disp->content,
-                    "You haven't fixed my circle :(\nInput:\n%s\nOutput:\n"
-                    "%s\nExpected:\n%s\nCan you try again?",
+                    "You didn't manage to fix this circle :(\n"
+                    "Input:\n%s"
+                    "Output:\n%s"
+                    "Expected:\n%s"
+                    "Can you try again?",
                     input, disp->content, expected);
 }
 
@@ -195,8 +198,11 @@ fix_tester (const char *input, const char *expected)
 
   // Check if the returned content is correct.
   cr_assert_str_eq (expected, content,
-                    "You haven't fixed my circle :(\nInput:\n%s\nOutput:\n"
-                    "%s\nExpected:\n%s\nCan you try again?",
+                    "You didn't manage to fix this circle :(\n"
+                    "Input:\n%s"
+                    "Output:\n%s"
+                    "Expected:\n%s"
+                    "Can you try again?",
                     input, content, expected);
 }
 
